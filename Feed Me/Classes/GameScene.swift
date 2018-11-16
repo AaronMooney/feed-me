@@ -56,7 +56,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         prize = SKSpriteNode(imageNamed: ImageName.Prize)
         prize.position = CGPoint(x: size.width * 0.5, y: size.height * 0.7)
         prize.zPosition = Layer.Prize
-        prize.physicsBody = SKPhysicsBody(texture: SKTexture(imageNamed: ImageName.PrizeMask), size: prize.size)
+        prize.physicsBody = SKPhysicsBody(texture: SKTexture(imageNamed: ImageName.Prize), size: prize.size)
         prize.physicsBody?.categoryBitMask = PhysicsCategory.Prize
         prize.physicsBody?.collisionBitMask = 0
         prize.physicsBody?.density = 0.5

@@ -19,6 +19,9 @@ struct ImageName {
     static let Vine = "Vine"
     static let Prize = "Pineapple"
     static let PrizeMask = "PineappleMask"
+    static let Button = "button"
+    static let Heart = "heart-full"
+    static let Options = "button-menu"
 }
 
 struct Layer {
@@ -27,6 +30,7 @@ struct Layer {
     static let Vine: CGFloat = 1
     static let Prize: CGFloat = 2
     static let Water: CGFloat = 3
+    static let Button: CGFloat = 1
 }
 
 struct PhysicsCategory {
@@ -45,5 +49,5 @@ struct SoundFile {
 
 struct GameConfiguration {
     static let VineDataFile = "Level-01.plist"
-    static let CanCutMultipleVinesAtOnce = true
+    static var CanCutMultipleVinesAtOnce = true
 }
