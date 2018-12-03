@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<array>
+	<dict>
+		<key>length</key>
+		<integer>25</integer>
+		<key>relAnchorPoint</key>
+		<string>{.24,.43}</string>
+	</dict>
+	<dict>
+		<key>relAnchorPoint</key>
+		<string>{.1187, .7}</string>
+		<key>length</key>
+		<integer>30</integer>
+	</dict>
+	<dict>
+		<key>relAnchorPoint</key>
+		<string>{.8500, .8996}</string>
+		<key>length</key>
+		<integer>18</integer>
+	</dict>
+	<dict>
+		<key>relAnchorPoint</key>
+		<string>{.8593, .7588}</string>
+		<key>length</key>
+		<integer>16</integer>
+	</dict>
+</array>
+</plist>

@@ -14,12 +14,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     private var crocodile: SKSpriteNode!
     private var prize: SKSpriteNode!
+    private var options: SKSpriteNode!
+    private var optionsMenu: SKSpriteNode!
+    private var toggleMultiCutValueLabel: SKLabelNode!
+    private var toggleAudioValueLabel: SKLabelNode!
     private static var backgroundMusicPlayer: AVAudioPlayer!
     private var sliceSoundAction: SKAction!
     private var splashSoundAction: SKAction!
     private var nomNomSoundAction: SKAction!
     private var levelOver = false
     private var vineCut = false
+    private var current = 0
+    private var toggleOptions = false
     
     override func didMove(to view: SKView) {
         setUpPhysics()
@@ -28,6 +34,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         setUpVines()
         setUpCrocodile()
         setUpAudio()
+        setUpOptions()
     }
     
     //MARK: - Level setup
@@ -69,7 +76,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     fileprivate func setUpVines() {
         // 1 load vine data
-        let dataFile = Bundle.main.path(forResource: GameConfiguration.VineDataFile, ofType: nil)
+        let dataFile = Bundle.main.path(forResource: GameConfiguration.Levels[current], ofType: nil)
         let vines = NSArray(contentsOfFile: dataFile!) as! [NSDictionary]
         
         // 2 add vines
@@ -132,6 +139,27 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     //MARK: - Touch handling
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if let touch = touches.first {
+            let location = touch.location(in: self)
+            let objects = nodes(at: location)
+            
+            if objects.contains(options){
+                toggleOptions = !toggleOptions
+                if (toggleOptions){
+                    addChild(optionsMenu)
+                } else {
+                    optionsMenu.removeFromParent()
+                }
+            }
+        
+            if objects.contains(toggleMultiCutValueLabel) {
+                GameConfiguration.CanCutMultipleVinesAtOnce = !GameConfiguration.CanCutMultipleVinesAtOnce
+            }
+            
+            if objects.contains(toggleAudioValueLabel) {
+                GameConfiguration.ToggleSound = !GameConfiguration.ToggleSound
+            }
+        }
         vineCut = false
     }
     
@@ -156,6 +184,24 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     //MARK: - Game logic
     
     override func update(_ currentTime: TimeInterval) {
+        if GameConfiguration.ToggleSound {
+            toggleAudioValueLabel.text = "On"
+            GameScene.backgroundMusicPlayer.volume = 1
+            sliceSoundAction = SKAction.playSoundFileNamed(SoundFile.Slice, waitForCompletion: false)
+            splashSoundAction = SKAction.playSoundFileNamed(SoundFile.Splash, waitForCompletion: false)
+            nomNomSoundAction = SKAction.playSoundFileNamed(SoundFile.NomNom, waitForCompletion: false)
+        } else {
+            toggleAudioValueLabel.text = "Off"
+            GameScene.backgroundMusicPlayer.volume = 0
+            nomNomSoundAction = SKAction.init()
+            sliceSoundAction = SKAction.init()
+            splashSoundAction = SKAction.init()
+        }
+        if (GameConfiguration.CanCutMultipleVinesAtOnce){
+            toggleMultiCutValueLabel.text = "On"
+        } else {
+            toggleMultiCutValueLabel.text = "Off"
+        }
         if levelOver {
             return
         }
@@ -218,6 +264,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let delay = SKAction.wait(forDuration: 1)
         let sceneChange = SKAction.run({
             let scene = GameScene(size: self.size)
+            scene.current = (self.current + 1) % GameConfiguration.Levels.count
             self.view?.presentScene(scene, transition: transition)
         })
         
@@ -243,9 +290,60 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if !GameScene.backgroundMusicPlayer.isPlaying {
             GameScene.backgroundMusicPlayer.play()
         }
+    }
+    
+    //MARK: - Options
+    
+    fileprivate func setUpOptions() {
+        options = SKSpriteNode(imageNamed: ImageName.Options)
+        options.zPosition = 4
+        options.position = CGPoint(x: size.width - 100,y: size.height - 100)
+        options.size = CGSize(width: 100, height: 100)
+        addChild(options)
+        optionsConfig()
+    }
+    
+    func optionsConfig(){
+        //TODO toggle sound
         
-        sliceSoundAction = SKAction.playSoundFileNamed(SoundFile.Slice, waitForCompletion: false)
-        splashSoundAction = SKAction.playSoundFileNamed(SoundFile.Splash, waitForCompletion: false)
-        nomNomSoundAction = SKAction.playSoundFileNamed(SoundFile.NomNom, waitForCompletion: false)
+        optionsMenu = SKSpriteNode(imageNamed: ImageName.Button)
+        optionsMenu.zPosition = 5
+        optionsMenu.anchorPoint = CGPoint(x: 0, y: 0)
+        optionsMenu.position = CGPoint(x: 100, y: 500)
+        optionsMenu.size = CGSize (width: 550, height: 500)
+        
+        let toggleMultiCutLabel = SKLabelNode(fontNamed: "Chalkduster")
+        toggleMultiCutLabel.zPosition = 5
+        toggleMultiCutLabel.position = CGPoint(x: optionsMenu.position.x + 125, y: optionsMenu.position.y - 100)
+        toggleMultiCutLabel.text = "Cut multiple vines?"
+        optionsMenu.addChild(toggleMultiCutLabel)
+        
+        toggleMultiCutValueLabel = SKLabelNode(fontNamed: "Chalkduster")
+        toggleMultiCutValueLabel.zPosition = 5
+        toggleMultiCutValueLabel.position = CGPoint(x: toggleMultiCutLabel.position.x + 225, y: toggleMultiCutLabel.position.y)
+        
+        if (GameConfiguration.CanCutMultipleVinesAtOnce){
+            toggleMultiCutValueLabel.text = "On"
+        } else {
+            toggleMultiCutValueLabel.text = "Off"
+        }
+        optionsMenu.addChild(toggleMultiCutValueLabel)
+        
+        let toggleAudioLabel = SKLabelNode(fontNamed: "Chalkduster")
+        toggleAudioLabel.zPosition = 5
+        toggleAudioLabel.position = CGPoint(x: optionsMenu.position.x + 125, y: optionsMenu.position.y - 150)
+        toggleAudioLabel.text = "Toggle Audio: "
+        optionsMenu.addChild(toggleAudioLabel)
+        
+        toggleAudioValueLabel = SKLabelNode(fontNamed: "Chalkduster")
+        toggleAudioValueLabel.zPosition = 5
+        toggleAudioValueLabel.position = CGPoint(x: toggleAudioLabel.position.x + 225, y: toggleAudioLabel.position.y)
+        optionsMenu.addChild(toggleAudioValueLabel)
+        
+        if GameConfiguration.ToggleSound {
+            toggleAudioValueLabel.text = "On"
+        } else {
+            toggleAudioValueLabel.text = "Off"
+        }
     }
 }

@@ -10,12 +10,11 @@ import SpriteKit
 
 class MenuScene : SKScene {
     
-    var options: SKSpriteNode!
-    var button: SKSpriteNode!
-    var optionsMenu: SKSpriteNode!
-    
-    var toggleOptions = false
+    var playButton: SKSpriteNode!
+    var multiCutButton: SKSpriteNode!
+    var toggleAudioButton: SKSpriteNode!
     var toggleMultiCutValueLabel: SKLabelNode!
+    var toggleAudioValueLabel: SKLabelNode!
     
     override func didMove(to view: SKView) {
         let background = SKSpriteNode(imageNamed: ImageName.Background)
@@ -32,26 +31,58 @@ class MenuScene : SKScene {
         water.size = CGSize(width: size.width, height: size.height * 0.2139)
         addChild(water)
         
-        button = SKSpriteNode(imageNamed: ImageName.Button)
-        button.anchorPoint = CGPoint(x: 0,y: 0)
-        button.position = CGPoint(x: size.width/2 - 150, y: size.height/2)
-        button.zPosition = Layer.Button
-        button.size = CGSize(width: 300, height: 100)
-        button.name = "play"
-        addChild(button)
+        playButton = SKSpriteNode(imageNamed: ImageName.Button)
+        playButton.anchorPoint = CGPoint(x: 0,y: 0)
+        playButton.position = CGPoint(x: size.width/2 - 150, y: size.height/2)
+        playButton.zPosition = Layer.Button
+        playButton.size = CGSize(width: 300, height: 100)
+        playButton.name = "play"
+        addChild(playButton)
         
         let playLabel = SKLabelNode(fontNamed: "Chalkduster")
         playLabel.zPosition = 4
         playLabel.text = "Play"
-        playLabel.position = CGPoint(x: button.position.x + 150,y: button.position.y + 50)
+        playLabel.position = CGPoint(x: playButton.position.x + 150,y: playButton.position.y + 50)
         addChild(playLabel)
         
-        options = SKSpriteNode(imageNamed: ImageName.Options)
-        options.zPosition = 4
-        options.position = CGPoint(x: size.width - 100,y: size.height - 100)
-        options.size = CGSize(width: 100, height: 100)
-        addChild(options)
-        setUpOptions()
+        multiCutButton = SKSpriteNode(imageNamed: ImageName.Button)
+        multiCutButton.anchorPoint = CGPoint(x: 0, y: 0)
+        multiCutButton.position = CGPoint(x: size.width/2 - 250, y: size.height/2 - 150)
+        multiCutButton.zPosition = Layer.Button
+        multiCutButton.size = CGSize(width: 500, height: 100)
+        multiCutButton.name = "multiCut"
+        addChild(multiCutButton)
+        
+        let multiCutLabel = SKLabelNode(fontNamed: "Chalkduster")
+        multiCutLabel.zPosition = 4
+        multiCutLabel.text = "Toggle multicut: "
+        multiCutLabel.position = CGPoint(x: multiCutButton.position.x + 250,y: multiCutButton.position.y + 50)
+        addChild(multiCutLabel)
+        
+        toggleMultiCutValueLabel = SKLabelNode(fontNamed: "Chalkduster")
+        toggleMultiCutValueLabel.zPosition = 5
+        toggleMultiCutValueLabel.position = CGPoint(x: multiCutLabel.position.x + 180, y: multiCutLabel.position.y)
+        addChild(toggleMultiCutValueLabel)
+        
+        toggleAudioButton = SKSpriteNode(imageNamed: ImageName.Button)
+        toggleAudioButton.anchorPoint = CGPoint(x: 0, y: 0)
+        toggleAudioButton.position = CGPoint(x: size.width/2 - 250, y: size.height/2 - 300)
+        toggleAudioButton.zPosition = Layer.Button
+        toggleAudioButton.size = CGSize(width: 500, height: 100)
+        toggleAudioButton.name = "audio"
+        addChild(toggleAudioButton)
+        
+        let toggleAudioLabel = SKLabelNode(fontNamed: "Chalkduster")
+        toggleAudioLabel.zPosition = 4
+        toggleAudioLabel.text = "Toggle audio: "
+        toggleAudioLabel.position = CGPoint(x: toggleAudioButton.position.x + 250,y: toggleAudioButton.position.y + 50)
+        addChild(toggleAudioLabel)
+        
+        toggleAudioValueLabel = SKLabelNode(fontNamed: "Chalkduster")
+        toggleAudioValueLabel.zPosition = 5
+        toggleAudioValueLabel.position = CGPoint(x: toggleAudioLabel.position.x + 180, y: toggleAudioLabel.position.y)
+        addChild(toggleAudioValueLabel)
+        
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -59,7 +90,7 @@ class MenuScene : SKScene {
             let location = touch.location(in: self)
             let objects = nodes(at: location)
             
-            if objects.contains(button) {
+            if objects.contains(playButton) {
                 if let view = self.view {
                     // Load the SKScene from 'GameScene.sks'
                     if let scene = SKScene(fileNamed: "GameScene") {
@@ -77,17 +108,11 @@ class MenuScene : SKScene {
                 }
             }
             
-            if objects.contains(options){
-                toggleOptions = !toggleOptions
-                if (toggleOptions){
-                    addChild(optionsMenu)
-                } else {
-                    optionsMenu.removeFromParent()
-                }
-            }
-            
-            if objects.contains(toggleMultiCutValueLabel) {
+            if objects.contains(multiCutButton){
                 GameConfiguration.CanCutMultipleVinesAtOnce = !GameConfiguration.CanCutMultipleVinesAtOnce
+            }
+            if objects.contains(toggleAudioButton){
+                GameConfiguration.ToggleSound = !GameConfiguration.ToggleSound
             }
         }
     }
@@ -98,33 +123,11 @@ class MenuScene : SKScene {
         } else {
             toggleMultiCutValueLabel.text = "Off"
         }
+        if (GameConfiguration.ToggleSound){
+            toggleAudioValueLabel.text = "On"
+        } else {
+            toggleAudioValueLabel.text = "Off"
+        }
     }
     
-    func setUpOptions(){
-        //TODO toggle sound
-        
-        optionsMenu = SKSpriteNode(imageNamed: ImageName.Button)
-        optionsMenu.zPosition = 5
-        optionsMenu.anchorPoint = CGPoint(x: 0, y: 0)
-        optionsMenu.position = CGPoint(x: 100, y: 500)
-        optionsMenu.size = CGSize (width: 550, height: 500)
-        
-        let toggleMultiCutLabel = SKLabelNode(fontNamed: "Chalkduster")
-        toggleMultiCutLabel.zPosition = 5
-        toggleMultiCutLabel.position = CGPoint(x: optionsMenu.position.x + 125, y: optionsMenu.position.y - 100)
-        toggleMultiCutLabel.text = "Cut multiple vines?"
-        optionsMenu.addChild(toggleMultiCutLabel)
-        
-        toggleMultiCutValueLabel = SKLabelNode(fontNamed: "Chalkduster")
-        toggleMultiCutValueLabel.zPosition = 5
-        toggleMultiCutValueLabel.position = CGPoint(x: toggleMultiCutLabel.position.x + 225, y: toggleMultiCutLabel.position.y)
-        
-        if (GameConfiguration.CanCutMultipleVinesAtOnce){
-            toggleMultiCutValueLabel.text = "On"
-        } else {
-            toggleMultiCutValueLabel.text = "Off"
-        }
-        
-        optionsMenu.addChild(toggleMultiCutValueLabel)
-    }
 }

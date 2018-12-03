@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E0D2915221B54619002AF196 /* Level-02.plist in Resources */ = {isa = PBXBuildFile; fileRef = E0D2915121B54619002AF196 /* Level-02.plist */; };
 		E0D4A0FB2195A710003721DD /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0D4A0FA2195A710003721DD /* AppDelegate.swift */; };
 		E0D4A0FD2195A710003721DD /* GameScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = E0D4A0FC2195A710003721DD /* GameScene.sks */; };
 		E0D4A1012195A710003721DD /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0D4A1002195A710003721DD /* GameScene.swift */; };
@@ -30,6 +31,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		E0D2915121B54619002AF196 /* Level-02.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Level-02.plist"; sourceTree = "<group>"; };
 		E0D4A0F72195A710003721DD /* Feed Me.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Feed Me.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0D4A0FA2195A710003721DD /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E0D4A0FC2195A710003721DD /* GameScene.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = GameScene.sks; sourceTree = "<group>"; };
@@ -132,6 +134,7 @@
 			isa = PBXGroup;
 			children = (
 				E0D4A1162195A91F003721DD /* Level-01.plist */,
+				E0D2915121B54619002AF196 /* Level-02.plist */,
 			);
 			path = Data;
 			sourceTree = "<group>";
@@ -226,6 +229,7 @@
 				E0D4A1202195A91F003721DD /* Level-01.plist in Resources */,
 				E0D4A0FD2195A710003721DD /* GameScene.sks in Resources */,
 				E0D4A10B2195A711003721DD /* LaunchScreen.storyboard in Resources */,
+				E0D2915221B54619002AF196 /* Level-02.plist in Resources */,
 				E0D4A12B2195A9A7003721DD /* Assets.xcassets in Resources */,
 				E0D4A1242195A91F003721DD /* CheeZeeJungle.caf in Resources */,
 				E0FCB2C1219EEC78009DC0B6 /* MenuScene.sks in Resources */,
