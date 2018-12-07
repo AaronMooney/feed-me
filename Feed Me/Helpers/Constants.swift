@@ -31,6 +31,7 @@ struct Layer {
     static let Prize: CGFloat = 2
     static let Water: CGFloat = 3
     static let Button: CGFloat = 1
+    static let HUD: CGFloat = 4
 }
 
 struct PhysicsCategory {

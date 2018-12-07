@@ -16,16 +16,25 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private var prize: SKSpriteNode!
     private var options: SKSpriteNode!
     private var optionsMenu: SKSpriteNode!
+    private var hearts: [SKSpriteNode] = [SKSpriteNode]()
+    private var heart1: SKSpriteNode!
+    private var heart2: SKSpriteNode!
+    private var heart3: SKSpriteNode!
     private var toggleMultiCutValueLabel: SKLabelNode!
     private var toggleAudioValueLabel: SKLabelNode!
+    private var scoreLabel: SKLabelNode!
+    private var levelLabel: SKLabelNode!
     private static var backgroundMusicPlayer: AVAudioPlayer!
     private var sliceSoundAction: SKAction!
     private var splashSoundAction: SKAction!
     private var nomNomSoundAction: SKAction!
     private var levelOver = false
     private var vineCut = false
-    private var current = 0
     private var toggleOptions = false
+    private var levelWon: Bool = false
+    private var currentLevel = 0
+    private var score = 0
+    private var lives = 3
     
     override func didMove(to view: SKView) {
         setUpPhysics()
@@ -35,6 +44,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         setUpCrocodile()
         setUpAudio()
         setUpOptions()
+        setUpHud()
     }
     
     //MARK: - Level setup
@@ -60,6 +70,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         addChild(water)
     }
     fileprivate func setUpPrize() {
+        levelWon = false
         prize = SKSpriteNode(imageNamed: ImageName.Prize)
         prize.position = CGPoint(x: size.width * 0.5, y: size.height * 0.7)
         prize.zPosition = Layer.Prize
@@ -72,11 +83,46 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         addChild(prize)
     }
     
+    fileprivate func setUpHud(){
+        scoreLabel = SKLabelNode(fontNamed: "chalkduster")
+        scoreLabel.zPosition = Layer.HUD
+        scoreLabel.position = CGPoint(x: size.width / 2, y: 20)
+        scoreLabel.text = "Score: \(score)"
+        addChild(scoreLabel)
+        
+        levelLabel = SKLabelNode(fontNamed: "chalkduster")
+        levelLabel.zPosition = Layer.HUD
+        levelLabel.position = CGPoint(x: size.width / 2, y: size.height - 40)
+        levelLabel.text = "Level: \(currentLevel + 1)"
+        addChild(levelLabel)
+        
+        if currentLevel == 0 {
+            heart1 = SKSpriteNode(imageNamed: ImageName.Heart)
+            heart1.zPosition = Layer.HUD
+            hearts.append(heart1)
+        
+            heart2 = SKSpriteNode(imageNamed: ImageName.Heart)
+            heart2.zPosition = Layer.HUD
+            hearts.append(heart2)
+        
+            heart3 = SKSpriteNode(imageNamed: ImageName.Heart)
+            heart3.zPosition = Layer.HUD
+            hearts.append(heart3)
+        }
+        
+        var betweenDistance = CGFloat(50)
+        for node in hearts{
+            node.position = CGPoint(x: betweenDistance, y: size.height - 40)
+            betweenDistance += CGFloat(50)
+            addChild(node)
+        }
+    }
+    
     //MARK: - Vine methods
     
     fileprivate func setUpVines() {
         // 1 load vine data
-        let dataFile = Bundle.main.path(forResource: GameConfiguration.Levels[current], ofType: nil)
+        let dataFile = Bundle.main.path(forResource: GameConfiguration.Levels[currentLevel], ofType: nil)
         let vines = NSArray(contentsOfFile: dataFile!) as! [NSDictionary]
         
         // 2 add vines
@@ -102,6 +148,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     fileprivate func setUpCrocodile() {
         crocodile = SKSpriteNode(imageNamed: ImageName.CrocMouthClosed)
         crocodile.position = CGPoint(x: size.width * 0.75, y: size.height * 0.312)
+        if currentLevel == 1 { crocodile.position.y -= 80 }
         crocodile.zPosition = Layer.Crocodile
         crocodile.physicsBody = SKPhysicsBody(texture: SKTexture(imageNamed: ImageName.CrocMask), size: crocodile.size)
         crocodile.physicsBody?.categoryBitMask = PhysicsCategory.Crocodile
@@ -123,6 +170,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let sequence = SKAction.sequence([waitOpen,open,waitClosed,close])
         let loop = SKAction.repeatForever(sequence)
         crocodile.run(loop)
+        
+        if currentLevel == 1 {
+            let moveLeft = SKAction.move(to: CGPoint(x: size.width * 0.1, y: crocodile.position.y), duration: 2)
+            let moveRight = SKAction.move(to: CGPoint(x: size.width * 0.9, y: crocodile.position.y), duration: 2)
+            let moveNode = SKNode()
+            crocodile.addChild(moveNode)
+            crocodile.run(SKAction.repeatForever(SKAction.sequence([moveLeft,moveRight])))
+        }
     }
     
     fileprivate func runNomNomAnimationWithDelay(_ delay: TimeInterval) {
@@ -207,9 +262,29 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         if prize.position.y <= 0 {
             run(splashSoundAction)
-            levelOver = true
-            switchToNewGameWithTransition(SKTransition.fade(withDuration: 1.0))
+            if lives <= 1 {
+                levelOver = true
+                returnToMenu(SKTransition.doorway(withDuration: 1.0))
+            } else {
+                resetLevel()
+            }
         }
+    }
+    
+    func resetLevel(){
+        lives -= 1
+        hearts.removeLast().removeFromParent()
+        setUpPrize()
+        setUpVines()
+    }
+    
+    func returnToMenu(_ transition: SKTransition){
+        let delay = SKAction.wait(forDuration: 1)
+        let sceneChange = SKAction.run({
+            let scene = MenuScene(size: self.size)
+            self.view?.presentScene(scene, transition: transition)
+        })
+        run(SKAction.sequence([delay, sceneChange]))
     }
     
     func didBegin(_ contact: SKPhysicsContact) {
@@ -219,6 +294,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if (contact.bodyA.node == crocodile && contact.bodyB.node == prize)
             || (contact.bodyA.node == prize && contact.bodyB.node == crocodile) {
             
+            score += 1
+            
             // shrink the pineapple away
             let shrink = SKAction.scale(to: 0, duration: 0.08)
             let removeNode = SKAction.removeFromParent()
@@ -227,6 +304,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             runNomNomAnimationWithDelay(0.15)
             run(nomNomSoundAction)
             // transition to next level
+            levelWon = true
             levelOver = true
             switchToNewGameWithTransition(SKTransition.doorway(withDuration: 1.0))
         }
@@ -264,7 +342,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let delay = SKAction.wait(forDuration: 1)
         let sceneChange = SKAction.run({
             let scene = GameScene(size: self.size)
-            scene.current = (self.current + 1) % GameConfiguration.Levels.count
+            if self.levelWon {
+                scene.currentLevel = (self.currentLevel + 1) % GameConfiguration.Levels.count
+                scene.score = self.score
+                scene.lives = self.lives
+                scene.hearts = self.hearts
+                for node in self.hearts { node.removeFromParent() }
+            }
             self.view?.presentScene(scene, transition: transition)
         })
         
@@ -309,12 +393,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         optionsMenu = SKSpriteNode(imageNamed: ImageName.Button)
         optionsMenu.zPosition = 5
         optionsMenu.anchorPoint = CGPoint(x: 0, y: 0)
-        optionsMenu.position = CGPoint(x: 100, y: 500)
-        optionsMenu.size = CGSize (width: 550, height: 500)
+        optionsMenu.position = CGPoint(x: 100, y: 800)
+        optionsMenu.size = CGSize (width: 550, height: 300)
         
         let toggleMultiCutLabel = SKLabelNode(fontNamed: "Chalkduster")
         toggleMultiCutLabel.zPosition = 5
-        toggleMultiCutLabel.position = CGPoint(x: optionsMenu.position.x + 125, y: optionsMenu.position.y - 100)
+        toggleMultiCutLabel.position = CGPoint(x: optionsMenu.position.x + 125, y: optionsMenu.position.y - 600)
         toggleMultiCutLabel.text = "Cut multiple vines?"
         optionsMenu.addChild(toggleMultiCutLabel)
         
@@ -331,7 +415,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         let toggleAudioLabel = SKLabelNode(fontNamed: "Chalkduster")
         toggleAudioLabel.zPosition = 5
-        toggleAudioLabel.position = CGPoint(x: optionsMenu.position.x + 125, y: optionsMenu.position.y - 150)
+        toggleAudioLabel.position = CGPoint(x: optionsMenu.position.x + 125, y: optionsMenu.position.y - 700)
         toggleAudioLabel.text = "Toggle Audio: "
         optionsMenu.addChild(toggleAudioLabel)
         
