@@ -96,7 +96,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         levelLabel.text = "Level: \(currentLevel + 1)"
         addChild(levelLabel)
         
-        if currentLevel == 0 {
+        if (currentLevel == 0 && hearts.count == 0) {
             heart1 = SKSpriteNode(imageNamed: ImageName.Heart)
             heart1.zPosition = Layer.HUD
             hearts.append(heart1)
