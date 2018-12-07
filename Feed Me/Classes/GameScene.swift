@@ -16,6 +16,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private var prize: SKSpriteNode!
     private var options: SKSpriteNode!
     private var optionsMenu: SKSpriteNode!
+    private var obstacle1: SKSpriteNode!
+    private var obstacle2: SKSpriteNode!
+    private var leftWall: SKSpriteNode!
+    private var rightWall: SKSpriteNode!
+    private var ceiling: SKSpriteNode!
     private var hearts: [SKSpriteNode] = [SKSpriteNode]()
     private var heart1: SKSpriteNode!
     private var heart2: SKSpriteNode!
@@ -45,6 +50,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         setUpAudio()
         setUpOptions()
         setUpHud()
+        if currentLevel == 2 {
+            setUpObstacles()
+        }
     }
     
     //MARK: - Level setup
@@ -76,11 +84,79 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         prize.zPosition = Layer.Prize
         prize.physicsBody = SKPhysicsBody(texture: SKTexture(imageNamed: ImageName.Prize), size: prize.size)
         prize.physicsBody?.categoryBitMask = PhysicsCategory.Prize
-        prize.physicsBody?.collisionBitMask = 0
+        prize.physicsBody?.collisionBitMask = PhysicsCategory.Obstacle
         prize.physicsBody?.density = 0.5
         prize.physicsBody?.isDynamic = true
+        prize.physicsBody?.restitution = 0.8
         
         addChild(prize)
+    }
+    
+    fileprivate func setUpObstacles(){
+        obstacle1 = SKSpriteNode(imageNamed: ImageName.Button)
+        obstacle1.position = CGPoint(x: size.width / 2 + 250, y: size.height / 2)
+        obstacle1.zRotation = 60
+        obstacle1.zPosition = Layer.Crocodile
+        obstacle1.size.height /= 2
+        obstacle1.size.width /= 1.5
+        obstacle1.physicsBody = SKPhysicsBody(texture: SKTexture(imageNamed: ImageName.Button), size: obstacle1.size)
+        obstacle1.physicsBody?.categoryBitMask = PhysicsCategory.Obstacle
+        obstacle1.physicsBody?.isDynamic = false
+        obstacle1.physicsBody?.collisionBitMask = PhysicsCategory.Prize
+        addChild(obstacle1)
+        
+        obstacle2 = SKSpriteNode(imageNamed: ImageName.Button)
+        obstacle2.position = CGPoint(x: size.width / 2 - 250, y: size.height / 2)
+        obstacle2.zRotation = -60
+        obstacle2.zPosition = Layer.Crocodile
+        obstacle2.size.height /= 2
+        obstacle2.size.width /= 1.5
+        obstacle2.physicsBody = SKPhysicsBody(texture: SKTexture(imageNamed: ImageName.Button), size: obstacle2.size)
+        obstacle2.physicsBody?.categoryBitMask = PhysicsCategory.Obstacle
+        obstacle2.physicsBody?.isDynamic = false
+        obstacle2.physicsBody?.collisionBitMask = PhysicsCategory.Prize
+        addChild(obstacle2)
+        
+        
+        leftWall = SKSpriteNode(imageNamed: ImageName.Button)
+        leftWall.zPosition = Layer.Crocodile
+        leftWall.size.width = 30
+        leftWall.size.height = size.height
+        leftWall.position = CGPoint(x: -leftWall.size.width, y: size.height/2)
+        leftWall.physicsBody = SKPhysicsBody(texture: SKTexture(imageNamed: ImageName.Button), size: leftWall.size)
+        leftWall.physicsBody?.categoryBitMask = PhysicsCategory.Obstacle
+        leftWall.physicsBody?.isDynamic = false
+        leftWall.physicsBody?.collisionBitMask = PhysicsCategory.Prize
+        addChild(leftWall)
+        
+        rightWall = SKSpriteNode(imageNamed: ImageName.Button)
+        rightWall.zPosition = Layer.Crocodile
+        rightWall.size.width = 30
+        rightWall.size.height = size.height
+        rightWall.position = CGPoint(x: size.width + rightWall.size.width, y: size.height/2)
+        rightWall.physicsBody = SKPhysicsBody(texture: SKTexture(imageNamed: ImageName.Button), size: rightWall.size)
+        rightWall.physicsBody?.categoryBitMask = PhysicsCategory.Obstacle
+        rightWall.physicsBody?.isDynamic = false
+        rightWall.physicsBody?.collisionBitMask = PhysicsCategory.Prize
+        addChild(rightWall)
+        
+        ceiling = SKSpriteNode(imageNamed: ImageName.Button)
+        ceiling.zPosition = Layer.Crocodile
+        ceiling.size.width = size.width
+        ceiling.size.height = 30
+        ceiling.position = CGPoint(x: size.width/2, y: size.height + ceiling.size.height)
+        ceiling.physicsBody = SKPhysicsBody(texture: SKTexture(imageNamed: ImageName.Button), size: ceiling.size)
+        ceiling.physicsBody?.categoryBitMask = PhysicsCategory.Obstacle
+        ceiling.physicsBody?.isDynamic = false
+        ceiling.physicsBody?.collisionBitMask = PhysicsCategory.Prize
+        
+        addChild(ceiling)
+        
+        
+        let moveLeft = SKAction.move(to: CGPoint(x: size.width * 0.1, y: obstacle1.position.y), duration: 2)
+        let moveRight = SKAction.move(to: CGPoint(x: size.width * 0.9, y: obstacle2.position.y), duration: 2)
+        obstacle2.run(SKAction.repeatForever(SKAction.sequence([moveRight,moveLeft])))
+        obstacle1.run(SKAction.repeatForever(SKAction.sequence([moveLeft,moveRight])))
     }
     
     fileprivate func setUpHud(){
@@ -148,7 +224,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     fileprivate func setUpCrocodile() {
         crocodile = SKSpriteNode(imageNamed: ImageName.CrocMouthClosed)
         crocodile.position = CGPoint(x: size.width * 0.75, y: size.height * 0.312)
-        if currentLevel == 1 { crocodile.position.y -= 80 }
+        if (currentLevel == 1 || currentLevel == 2) { crocodile.position.y -= 80 }
         crocodile.zPosition = Layer.Crocodile
         crocodile.physicsBody = SKPhysicsBody(texture: SKTexture(imageNamed: ImageName.CrocMask), size: crocodile.size)
         crocodile.physicsBody?.categoryBitMask = PhysicsCategory.Crocodile
@@ -171,11 +247,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let loop = SKAction.repeatForever(sequence)
         crocodile.run(loop)
         
-        if currentLevel == 1 {
+        if (currentLevel == 1 || currentLevel == 2) {
             let moveLeft = SKAction.move(to: CGPoint(x: size.width * 0.1, y: crocodile.position.y), duration: 2)
             let moveRight = SKAction.move(to: CGPoint(x: size.width * 0.9, y: crocodile.position.y), duration: 2)
-            let moveNode = SKNode()
-            crocodile.addChild(moveNode)
             crocodile.run(SKAction.repeatForever(SKAction.sequence([moveLeft,moveRight])))
         }
     }
@@ -308,6 +382,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             levelOver = true
             switchToNewGameWithTransition(SKTransition.doorway(withDuration: 1.0))
         }
+//        if (contact.bodyA.node == obstacle && contact.bodyB.node == prize)
+//            || (contact.bodyA.node == prize && contact.bodyB.node == obstacle) {
+//            print("hit")
+//        }
     }
     
     fileprivate func checkIfVineCutWithBody(_ body: SKPhysicsBody) {

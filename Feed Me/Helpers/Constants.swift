@@ -39,6 +39,7 @@ struct PhysicsCategory {
     static let VineRoot: UInt32 = 2
     static let Vine: UInt32 = 4
     static let Prize: UInt32 = 8
+    static let Obstacle: UInt32 = 9
 }
 
 struct SoundFile {
@@ -49,7 +50,7 @@ struct SoundFile {
 }
 
 struct GameConfiguration {
-    static let Levels = ["Level-01.plist", "Level-02.plist"]
+    static let Levels = ["Level-01.plist", "Level-02.plist", "Level-03.plist"]
     static var CanCutMultipleVinesAtOnce = true
     static var ToggleSound = true
 }
